@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Triumph — Pure Power</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Canvas Three.js fijo -->
+  <canvas id="canvas"></canvas>
+
+  <!-- Barra de progreso -->
+  <div id="progress-bar"></div>
+
+  <!-- NAV -->
+  <nav id="navbar">
+    <span class="nav-brand">TRIUMPH</span>
+    <ul class="nav-links">
+      <li><a href="#section-cockpit">Motor</a></li>
+      <li><a href="#section-chassis">Chasis</a></li>
+      <li><a href="#section-tech">Tech</a></li>
+      <li><a href="#section-about">About</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-tag">Edición Limitada &nbsp;·&nbsp; 100 unidades</div>
+    <h1 class="hero-title">SPEED<br/><span>TRIPLE</span></h1>
+    <p class="hero-sub">1050 cc · 150 CV · 3 cilindros</p>
+    <div class="scroll-hint">
+      <span>Desliza para descubrir</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 01 — MOTOR -->
+  <section class="feature-section" id="section-cockpit">
+    <div class="feature-number">01</div>
+    <div class="feature-content left">
+      <span class="feature-tag">Motor</span>
+      <h2 class="feature-title">1050 cc de<br/>pura rabia</h2>
+      <p class="feature-desc">Motor tricilíndrico en línea. 150 CV a 11.000 rpm. Torque lineal desde 3.000 rpm. El sonido más salvaje de la gama naked.</p>
+      <ul class="feature-list">
+        <li><span>Cilindrada</span><strong>1050 cc</strong></li>
+        <li><span>Potencia</span><strong>150 CV</strong></li>
+        <li><span>Par máximo</span><strong>105 Nm</strong></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 02 — CHASIS -->
+  <section class="feature-section" id="section-chassis">
+    <div class="feature-number">02</div>
+    <div class="feature-content right">
+      <span class="feature-tag">Chasis</span>
+      <h2 class="feature-title">Ingeniería<br/>de aluminio</h2>
+      <p class="feature-desc">Chasis perimetral de aluminio de doble viga. Basculante monobrazo. Suspensión Öhlins STX22 ajustable en compresión y extensión.</p>
+      <ul class="feature-list">
+        <li><span>Suspensión</span><strong>Öhlins STX22</strong></li>
+        <li><span>Frenos</span><strong>Brembo M50</strong></li>
+        <li><span>Peso</span><strong>189 kg</strong></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 03 — TECNOLOGÍA -->
+  <section class="feature-section" id="section-tech">
+    <div class="feature-number">03</div>
+    <div class="feature-content left">
+      <span class="feature-tag">Tecnología</span>
+      <h2 class="feature-title">El control<br/>en tus manos</h2>
+      <p class="feature-desc">TFT de 5" con conectividad GoPro y smartphone. Quickshifter bidireccional. Control de tracción de 5 niveles y 3 modos de conducción.</p>
+      <ul class="feature-list">
+        <li><span>Pantalla</span><strong>TFT 5"</strong></li>
+        <li><span>Modos</span><strong>Road / Sport / Rain</strong></li>
+        <li><span>Quickshifter</span><strong>Bidireccional</strong></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 04 — ABOUT / FINAL CTA -->
+  <section class="feature-section section-final" id="section-about">
+    <div class="feature-number">04</div>
+    <div class="feature-content center">
+      <span class="feature-tag">La leyenda</span>
+      <h2 class="feature-title">Born to<br/>dominate</h2>
+      <p class="feature-desc">La Speed Triple redefine lo que una naked puede ser. No es solo una moto — es una declaración.</p>
+      <a href="#" class="cta-btn">Configurar la tuya</a>
+    </div>
+  </section>
+
+  <!-- Importmap Three.js -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
+    }
+  }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/bundled/lenis.min.js"></script>
+  <script type="module" src="main.js"></script>
+</body>
+</html>
