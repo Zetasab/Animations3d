@@ -36,8 +36,8 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x080800);
 scene.fog = new THREE.FogExp2(0x080800, 0.038);
 
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
-camera.position.set(0, 0.9, 4.8);
+const camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(0, 0.9, 3.35);
 
 // ─────────────────────────────────────────────
 //  LUCES
@@ -61,24 +61,6 @@ scene.add(fillLight);
 const sideLight = new THREE.DirectionalLight(0xf5c518, 0.8);
 sideLight.position.set(0, 1, -6);
 scene.add(sideLight);
-
-// ─────────────────────────────────────────────
-//  SUELO + GLOW
-// ─────────────────────────────────────────────
-const floor = new THREE.Mesh(
-  new THREE.PlaneGeometry(20, 20),
-  new THREE.MeshStandardMaterial({ color: 0x0d0d00, roughness: 0.9 })
-);
-floor.rotation.x = -Math.PI / 2;
-floor.position.y = -0.52;
-floor.receiveShadow = true;
-scene.add(floor);
-
-const glowMat = new THREE.MeshBasicMaterial({ color: 0xf5c518, transparent: true, opacity: 0.06 });
-const glow = new THREE.Mesh(new THREE.CircleGeometry(1.8, 48), glowMat);
-glow.rotation.x = -Math.PI / 2;
-glow.position.y = -0.51;
-scene.add(glow);
 
 // ─────────────────────────────────────────────
 //  PARTICULAS
@@ -332,13 +314,13 @@ loadGLTF('triumph_motorbike.glb');
 //  Moto arranca frontal, rota mientras se descubre
 // ─────────────────────────────────────────────
 const keyframes = [
-  { p: 0.00, ry: 0,              rz: 0,     x: 0,    y: 0,    s: 1.0,  camZ: 4.8 },
-  { p: 0.10, ry: 0,              rz: 0,     x: 0,    y: 0,    s: 1.0,  camZ: 4.8 },
-  { p: 0.28, ry: Math.PI * 0.35, rz: 0.04,  x: 0.55, y: 0,    s: 0.95, camZ: 4.5 },
-  { p: 0.46, ry: Math.PI * 0.85, rz: 0.16,  x: 0.7,  y: 0.05, s: 0.9,  camZ: 4.3 },
-  { p: 0.64, ry: Math.PI * 1.35, rz: -0.14, x: -0.6, y: 0,    s: 0.88, camZ: 4.2 },
-  { p: 0.82, ry: Math.PI * 1.75, rz: -0.05, x: -0.3, y: 0.05, s: 0.95, camZ: 4.6 },
-  { p: 1.00, ry: Math.PI * 2,    rz: 0,     x: 0,    y: 0,    s: 1.0,  camZ: 4.8 },
+  { p: 0.00, ry: 0,              rz: 0,     x: 0,    y: 0,    s: 1.15, camZ: 3.35 },
+  { p: 0.10, ry: 0,              rz: 0,     x: 0,    y: 0,    s: 1.15, camZ: 3.35 },
+  { p: 0.28, ry: Math.PI * 0.35, rz: 0.04,  x: 0.55, y: 0,    s: 1.08, camZ: 3.1 },
+  { p: 0.46, ry: Math.PI * 0.85, rz: 0.16,  x: 0.7,  y: 0.05, s: 1.02, camZ: 2.95 },
+  { p: 0.64, ry: Math.PI * 1.35, rz: -0.14, x: -0.6, y: 0,    s: 1.0,  camZ: 2.9 },
+  { p: 0.82, ry: Math.PI * 1.75, rz: -0.05, x: -0.3, y: 0.05, s: 1.08, camZ: 3.15 },
+  { p: 1.00, ry: Math.PI * 2,    rz: 0,     x: 0,    y: 0,    s: 1.15, camZ: 3.35 },
 ];
 
 function lerp(a, b, t) { return a + (b - a) * t; }
@@ -407,7 +389,7 @@ initLenis();
 // ─────────────────────────────────────────────
 const progressBar = document.getElementById('progress-bar');
 const clock = new THREE.Clock();
-let currentRY = 0, currentRZ = 0, currentX = 0, currentY = 0, currentS = 1, currentCamZ = 4.8;
+let currentRY = 0, currentRZ = 0, currentX = 0, currentY = 0, currentS = 1.15, currentCamZ = 3.35;
 
 function animate() {
   requestAnimationFrame(animate);
@@ -427,15 +409,13 @@ function animate() {
   currentS    += (kf.s    - currentS)    * ease;
   currentCamZ += (kf.camZ - currentCamZ) * ease;
 
-  bikeGroup.rotation.y = currentRY;
+  bikeGroup.rotation.y = currentRY + 0.3;
   bikeGroup.rotation.z = currentRZ;
-  bikeGroup.position.x = currentX;
-  bikeGroup.position.y = currentY - 0.22 + Math.sin(elapsed * 1.1) * 0.035;
+  bikeGroup.position.x = currentX + 0.32;
+  bikeGroup.position.y = currentY + 0.18;
   bikeGroup.scale.setScalar(currentS);
 
   camera.position.z = currentCamZ;
-
-  glow.material.opacity = 0.04 + Math.sin(elapsed * 0.8) * 0.02;
 
   particles.rotation.y = elapsed * 0.04;
   particles.rotation.x = Math.sin(elapsed * 0.15) * 0.05;
