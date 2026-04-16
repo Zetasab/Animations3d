@@ -367,7 +367,7 @@ function loadGLTF(url) {
   );
 }
 
-loadGLTF('triumph_motorbike.glb');
+loadGLTF('/triumph_motorbike.glb');
 
 // ─────────────────────────────────────────────
 //  KEYFRAMES por secciones
