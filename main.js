@@ -6,17 +6,75 @@ import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 //  LENIS — Smooth Scroll
 // ─────────────────────────────────────────────
 let lenisScrollY = 0;
+const splashScreen = document.getElementById('splash-screen');
+const splashMinimumVisibleMs = 900;
+const splashStartedAt = performance.now();
+
+if ('scrollRestoration' in history) {
+  history.scrollRestoration = 'manual';
+}
+
+window.scrollTo(0, 0);
+
+function resetScrollPosition(lenisInstance) {
+  window.scrollTo(0, 0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+  lenisScrollY = 0;
+  if (lenisInstance) {
+    lenisInstance.scrollTo(0, { immediate: true, force: true });
+  }
+}
 
 function initLenis() {
   if (typeof Lenis === 'undefined') {
     window.addEventListener('scroll', () => { lenisScrollY = window.scrollY; });
     return null;
   }
-  const lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
+  const lenis = new Lenis({
+    lerp: 0.02,
+    smoothWheel: true,
+    wheelMultiplier: 0.45,
+  });
   lenis.on('scroll', ({ scroll }) => { lenisScrollY = scroll; });
   function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
   requestAnimationFrame(raf);
   return lenis;
+}
+
+function hideSplashScreen() {
+  if (!splashScreen || splashScreen.classList.contains('is-hidden')) return;
+  const elapsed = performance.now() - splashStartedAt;
+  const remaining = Math.max(splashMinimumVisibleMs - elapsed, 0);
+
+  window.setTimeout(() => {
+    splashScreen.classList.add('is-hidden');
+    document.body.classList.remove('is-loading');
+  }, remaining);
+}
+
+function onBikeModelReady() {
+  hideSplashScreen();
+}
+
+function initSmoothAnchorLinks(lenisInstance) {
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener('click', (event) => {
+      const targetSelector = link.getAttribute('href');
+      if (!targetSelector || targetSelector === '#') return;
+
+      const targetElement = document.querySelector(targetSelector);
+      if (!targetElement) return;
+
+      event.preventDefault();
+      if (lenisInstance) {
+        lenisInstance.scrollTo(targetElement, { duration: 1.1 });
+      } else {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      history.replaceState(null, '', targetSelector);
+    });
+  });
 }
 
 // ─────────────────────────────────────────────
@@ -298,11 +356,13 @@ function loadGLTF(url) {
       model.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
       model.position.y -= 0.3;
       bikeGroup.add(model);
+      onBikeModelReady();
     },
     undefined,
     () => {
       console.warn('triumph_motorbike.glb no encontrado — usando moto procedural.');
       bikeGroup.add(buildProceduralBike());
+      onBikeModelReady();
     }
   );
 }
@@ -310,18 +370,38 @@ function loadGLTF(url) {
 loadGLTF('triumph_motorbike.glb');
 
 // ─────────────────────────────────────────────
-//  KEYFRAMES tipo unbox (igual que referencia)
-//  Moto arranca frontal, rota mientras se descubre
+//  KEYFRAMES por secciones
+//  Hero fijo, motor con zoom/perfil, chasis frontal,
+//  tech con alejamiento y about vuelve al estado principal.
 // ─────────────────────────────────────────────
 const keyframes = [
-  { p: 0.00, ry: 0,              rz: 0,     x: 0,    y: 0,    s: 1.15, camZ: 3.35 },
-  { p: 0.10, ry: 0,              rz: 0,     x: 0,    y: 0,    s: 1.15, camZ: 3.35 },
-  { p: 0.28, ry: Math.PI * 0.35, rz: 0.04,  x: 0.55, y: 0,    s: 1.08, camZ: 3.1 },
-  { p: 0.46, ry: Math.PI * 0.85, rz: 0.16,  x: 0.7,  y: 0.05, s: 1.02, camZ: 2.95 },
-  { p: 0.64, ry: Math.PI * 1.35, rz: -0.14, x: -0.6, y: 0,    s: 1.0,  camZ: 2.9 },
-  { p: 0.82, ry: Math.PI * 1.75, rz: -0.05, x: -0.3, y: 0.05, s: 1.08, camZ: 3.15 },
-  { p: 1.00, ry: Math.PI * 2,    rz: 0,     x: 0,    y: 0,    s: 1.15, camZ: 3.35 },
+  { p: 0.00, ry: 0.30,               rz: 0.00,  x: 0.00,  y: 0.00,  s: 1.15, camZ: 3.35 },
+  { p: 0.14, ry: 0.30,               rz: 0.00,  x: 0.00,  y: 0.00,  s: 1.15, camZ: 3.35 },
+  { p: 0.32, ry: Math.PI * 0.5 + 0.2,rz: 0.02,  x: 0.52,  y: 0.3,   s: 1.34, camZ: 2.35 },
+  { p: 0.54, ry: -Math.PI * 0.5 + 0.18, rz: -0.02, x: -0.48, y: 0.03, s: 1.20, camZ: 3.00 },
+  { p: 0.68, ry: 0.10,               rz: -0.03, x: -0.18, y: -0.05, s: 0.92, camZ: 4.45 },
+  { p: 0.88, ry: 0.30,               rz: 0.00,  x: 0.00,  y: 0.00,  s: 1.15, camZ: 3.35 },
+  { p: 1.00, ry: 0.30,               rz: 0.00,  x: 0.00,  y: 0.00,  s: 1.15, camZ: 3.35 },
 ];
+
+const cursorRot = {
+  targetY: 0,
+  targetZ: 0,
+  currentY: 0,
+  currentZ: 0,
+};
+
+window.addEventListener('pointermove', (event) => {
+  const nx = (event.clientX / window.innerWidth) * 2 - 1;
+  const ny = (event.clientY / window.innerHeight) * 2 - 1;
+  cursorRot.targetY = nx * 0.06;
+  cursorRot.targetZ = -ny * 0.025;
+});
+
+window.addEventListener('pointerleave', () => {
+  cursorRot.targetY = 0;
+  cursorRot.targetZ = 0;
+});
 
 function lerp(a, b, t) { return a + (b - a) * t; }
 function easeInOut(t)  { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
@@ -345,6 +425,13 @@ function getKF(progress) {
   };
 }
 
+function getLockedProgress(progress) {
+  if (progress >= 0.18 && progress < 0.42) return 0.32;
+  if (progress >= 0.42 && progress < 0.56) return 0.54;
+  if (progress >= 0.56 && progress < 0.82) return 0.68;
+  return progress;
+}
+
 // ─────────────────────────────────────────────
 //  GSAP ScrollTrigger — animar textos
 // ─────────────────────────────────────────────
@@ -359,13 +446,117 @@ window.addEventListener('load', () => {
           opacity: 1, y: 0, duration: 1, ease: 'power3.out',
           scrollTrigger: {
             trigger: el.closest('.feature-section'),
-            start: 'top 65%',
-            end: 'top 25%',
-            toggleActions: 'play reverse play reverse',
+            start: 'top 85%',
+            end: 'bottom 15%',
+            toggleActions: 'play none none reverse',
           }
         }
       );
     });
+
+    const motorPoints = gsap.utils.toArray('.motor-point');
+    if (motorPoints.length) {
+      gsap.fromTo(
+        motorPoints,
+        { opacity: 0, x: -28 },
+        {
+          opacity: 1,
+          x: 0,
+          duration: 0.55,
+          stagger: 0.12,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: '#section-cockpit',
+            start: 'top 85%',
+            end: 'bottom 20%',
+            toggleActions: 'play none none reverse',
+          }
+        }
+      );
+    }
+
+    const chassisPoints = gsap.utils.toArray('.chassis-point');
+    if (chassisPoints.length) {
+      gsap.fromTo(
+        chassisPoints,
+        { opacity: 0, x: 28 },
+        {
+          opacity: 1,
+          x: 0,
+          duration: 0.55,
+          stagger: 0.12,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: '#section-chassis',
+            start: 'top 85%',
+            end: 'bottom 20%',
+            toggleActions: 'play none none reverse',
+          }
+        }
+      );
+    }
+
+    const techPoints = gsap.utils.toArray('.tech-point');
+    if (techPoints.length) {
+      gsap.fromTo(
+        techPoints,
+        { opacity: 0, x: -28 },
+        {
+          opacity: 1,
+          x: 0,
+          duration: 0.55,
+          stagger: 0.12,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: '#section-tech',
+            start: 'top 85%',
+            end: 'bottom 20%',
+            toggleActions: 'play none none reverse',
+          }
+        }
+      );
+    }
+
+    const pricingCards = gsap.utils.toArray('.pricing-card');
+    if (pricingCards.length) {
+      gsap.fromTo(
+        pricingCards,
+        { opacity: 0, y: 40 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.7,
+          stagger: 0.14,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: '#section-pricing',
+            start: 'top 80%',
+            end: 'bottom 20%',
+            toggleActions: 'play none none reverse',
+          }
+        }
+      );
+    }
+
+    const storyPanel = document.querySelector('.story-panel');
+    if (storyPanel) {
+      gsap.fromTo(
+        storyPanel,
+        { opacity: 0, y: 46 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: '#section-beyond',
+            start: 'top 82%',
+            end: 'bottom 20%',
+            toggleActions: 'play none none reverse',
+          }
+        }
+      );
+    }
   }, 200);
 });
 
@@ -382,14 +573,28 @@ window.addEventListener('resize', () => {
 // ─────────────────────────────────────────────
 //  LENIS INIT
 // ─────────────────────────────────────────────
-initLenis();
+const lenis = initLenis();
+resetScrollPosition(lenis);
+initSmoothAnchorLinks(lenis);
+
+window.addEventListener('load', () => {
+  resetScrollPosition(lenis);
+});
+
+const reloadPageButton = document.getElementById('reload-page');
+if (reloadPageButton) {
+  reloadPageButton.addEventListener('click', () => {
+    resetScrollPosition(lenis);
+    window.location.reload();
+  });
+}
 
 // ─────────────────────────────────────────────
 //  RENDER LOOP con inercia suave
 // ─────────────────────────────────────────────
 const progressBar = document.getElementById('progress-bar');
 const clock = new THREE.Clock();
-let currentRY = 0, currentRZ = 0, currentX = 0, currentY = 0, currentS = 1.15, currentCamZ = 3.35;
+let currentRY = 0.3, currentRZ = 0, currentX = 0, currentY = 0, currentS = 1.15, currentCamZ = 3.35;
 
 function animate() {
   requestAnimationFrame(animate);
@@ -400,8 +605,9 @@ function animate() {
 
   if (progressBar) progressBar.style.width = (progress * 100) + '%';
 
-  const kf   = getKF(progress);
-  const ease = 0.06;
+  const lockedProgress = getLockedProgress(progress);
+  const kf   = getKF(lockedProgress);
+  const ease = 0.14;
   currentRY   += (kf.ry   - currentRY)   * ease;
   currentRZ   += (kf.rz   - currentRZ)   * ease;
   currentX    += (kf.x    - currentX)    * ease;
@@ -409,8 +615,11 @@ function animate() {
   currentS    += (kf.s    - currentS)    * ease;
   currentCamZ += (kf.camZ - currentCamZ) * ease;
 
-  bikeGroup.rotation.y = currentRY + 0.3;
-  bikeGroup.rotation.z = currentRZ;
+  cursorRot.currentY += (cursorRot.targetY - cursorRot.currentY) * 0.08;
+  cursorRot.currentZ += (cursorRot.targetZ - cursorRot.currentZ) * 0.08;
+
+  bikeGroup.rotation.y = currentRY + cursorRot.currentY;
+  bikeGroup.rotation.z = currentRZ + cursorRot.currentZ;
   bikeGroup.position.x = currentX + 0.32;
   bikeGroup.position.y = currentY + 0.18;
   bikeGroup.scale.setScalar(currentS);
