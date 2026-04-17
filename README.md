@@ -4,7 +4,7 @@
 
 Por si quieres ver el [live demo](https://animation3d.cesarsobrino.es/)
 
-![Portada del proyecto](./portada.png)
+![Preview del proyecto](./Video-Project-1.gif)
 
 ## Descripción
 
